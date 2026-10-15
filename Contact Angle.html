@@ -1,0 +1,553 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Contact Angle</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a drafting table — the pattern plate on the left, an instrument panel of dials on the right, field notes below. */
+:root{
+  --bg:#E9ECE7; --surface:#F6F7F3; --ink:#18242F; --muted:#5A6670; --line:#C9D0CA;
+  --accent:#1D6A80; --accent-ink:#FFFFFF; --warm:#B7791F;
+  --f-display:"Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --f-body:"IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F151A; --surface:#172028; --ink:#E2E7E2; --muted:#93A0A8; --line:#2A3640;
+  --accent:#5DB3C9; --accent-ink:#0B1216; --warm:#E0A64A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F151A; --surface:#172028; --ink:#E2E7E2; --muted:#93A0A8; --line:#2A3640;
+  --accent:#5DB3C9; --accent-ink:#0B1216; --warm:#E0A64A; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:20px 40px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 20px}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(28px,4vw,40px);letter-spacing:-.02em;margin:0;line-height:1.05;text-wrap:balance}
+h1 span{color:var(--accent)}
+.tag{color:var(--muted);margin:0;max-width:52ch}
+.main{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start}
+@media (max-width:880px){.main{grid-template-columns:minmax(0,1fr)}}
+
+.plate{display:flex;flex-direction:column;gap:10px;min-width:0}
+.canvas-box{position:relative;width:100%;max-width:100%;aspect-ratio:1/1;border-radius:4px;overflow:hidden;box-shadow:0 1px 0 var(--line),0 18px 40px -24px rgba(0,0,0,.45)}
+canvas{display:block;width:100%;height:100%}
+.readout{display:flex;flex-wrap:wrap;gap:6px 18px;font-family:var(--f-mono);font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.readout b{color:var(--ink);font-weight:500}
+.crit{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-family:var(--f-mono);font-size:12px;padding:3px 8px;border-radius:99px;border:1px solid var(--line);background:var(--surface);font-variant-numeric:tabular-nums}
+.chip.above{border-color:var(--warm);color:var(--warm)}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:18px;display:flex;flex-direction:column;gap:18px;min-width:0}
+.group{display:flex;flex-direction:column;gap:8px}
+.label{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:500;display:flex;justify-content:space-between;gap:8px}
+.label output{font-family:var(--f-mono);letter-spacing:0;text-transform:none;color:var(--ink);font-variant-numeric:tabular-nums}
+.seg{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.seg button,.btn{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:4px;padding:7px 4px;cursor:pointer}
+.seg button{font-family:var(--f-mono);font-size:11px;padding:6px 2px;display:flex;flex-direction:column;align-items:center;gap:3px}
+.seg button svg{width:26px;height:26px}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.seg button:hover{border-color:var(--accent)}
+.hint{font-size:12.5px;color:var(--muted);margin:0}
+input[type=range]{width:100%;accent-color:var(--accent);margin:0}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pal{display:flex;gap:6px;flex-wrap:wrap}
+.pal button{width:34px;height:34px;border-radius:50%;border:2px solid var(--line);cursor:pointer;padding:0;overflow:hidden;display:grid;grid-template-columns:1fr 1fr}
+.pal button[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--surface) inset}
+.pal span{display:block}
+.swatches{display:flex;gap:10px;flex-wrap:wrap}
+.swatches label{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted)}
+input[type=color]{width:30px;height:26px;border:1px solid var(--line);border-radius:4px;padding:0;background:none;cursor:pointer}
+.check{display:flex;align-items:center;gap:8px;font-size:13.5px;cursor:pointer}
+.check input{accent-color:var(--accent);width:16px;height:16px}
+.btn{padding:8px 12px}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:500}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.status{font-size:12.5px;color:var(--muted);min-height:1.5em;margin:0}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.anim{border-top:1px solid var(--line);padding-top:16px}
+.seg2{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.seg2 button{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:4px;padding:7px 4px;cursor:pointer}
+.seg2 button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.field{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13.5px}
+.field span{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:500}
+select{font:inherit;font-size:13.5px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:6px 8px;min-width:0;flex:1;max-width:210px}
+.progress{height:3px;background:var(--line);border-radius:2px;overflow:hidden}
+.progress span{display:block;height:100%;width:0;background:var(--warm)}
+.btn.rec{background:var(--warm);border-color:var(--warm);color:var(--accent-ink)}
+
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;border-top:1px solid var(--line);padding-top:20px}
+.notes h2{font-family:var(--f-display);font-size:17px;font-weight:700;margin:0 0 6px;letter-spacing:-.01em}
+.notes p{margin:0;color:var(--muted);font-size:14px;max-width:60ch}
+.notes p b{color:var(--ink);font-weight:500}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Contact <span>Angle</span></h1>
+    <p class="tag">Grow star patterns from a plain tiling. Two rays leave the middle of every edge; where they meet, a star forms.</p>
+  </header>
+
+  <div class="main">
+    <section class="plate" aria-label="Pattern">
+      <div class="canvas-box"><canvas id="cv" role="img" aria-label="Generated geometric star pattern"></canvas></div>
+      <div class="readout" id="readout"></div>
+      <div class="crit" id="crit"></div>
+    </section>
+
+    <aside class="panel" aria-label="Controls">
+      <div class="group">
+        <div class="label">Tiling <output id="tilingName"></output></div>
+        <div class="seg" id="tilings"></div>
+        <p class="hint" id="tilingHint"></p>
+      </div>
+
+      <div class="group">
+        <label class="label" for="theta">Contact angle θ <output id="thetaOut"></output></label>
+        <input type="range" id="theta" min="1" max="89" step="0.5" value="60">
+      </div>
+      <div class="group">
+        <label class="label" for="delta">Offset δ <output id="deltaOut"></output></label>
+        <input type="range" id="delta" min="-0.4" max="0.4" step="0.01" value="0">
+      </div>
+      <div class="group">
+        <label class="label" for="scale">Edge length <output id="scaleOut"></output></label>
+        <input type="range" id="scale" min="16" max="220" step="1" value="70">
+      </div>
+      <div class="group">
+        <label class="label" for="rot">Rotation <output id="rotOut"></output></label>
+        <input type="range" id="rot" min="0" max="90" step="0.5" value="0">
+      </div>
+      <div class="group">
+        <label class="label" for="weight">Line weight <output id="weightOut"></output></label>
+        <input type="range" id="weight" min="0.5" max="24" step="0.5" value="4">
+      </div>
+
+      <div class="group">
+        <div class="label">Style</div>
+        <label class="check"><input type="checkbox" id="band"> Strapwork bands (hollow lines)</label>
+        <label class="check"><input type="checkbox" id="showTiles"> Show the underlying tiling</label>
+      </div>
+
+      <div class="group">
+        <div class="label">Palette</div>
+        <div class="pal" id="pals"></div>
+        <div class="swatches">
+          <label>Ground <input type="color" id="cBg"></label>
+          <label>Lines <input type="color" id="cA"></label>
+          <label>Second <input type="color" id="cB"></label>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="row">
+          <button class="btn" id="random" type="button">Surprise me</button>
+        </div>
+      </div>
+
+      <div class="group anim">
+        <div class="label">Animation</div>
+        <div class="seg2" id="modes" role="group" aria-label="Playback mode">
+          <button type="button" data-mode="loop" aria-pressed="true">Loop</button>
+          <button type="button" data-mode="once" aria-pressed="false">Play once</button>
+        </div>
+        <label class="field" for="aParam"><span>Animate</span>
+          <select id="aParam">
+            <option value="theta">Contact angle θ</option>
+            <option value="delta">Offset δ</option>
+            <option value="rot">Rotation</option>
+            <option value="scale">Edge length (zoom)</option>
+            <option value="draw">Draw the construction</option>
+          </select>
+        </label>
+        <div id="rangeBox" class="group">
+          <label class="label" for="aFrom">From <output id="aFromOut"></output></label>
+          <input type="range" id="aFrom">
+          <label class="label" for="aTo">To <output id="aToOut"></output></label>
+          <input type="range" id="aTo">
+        </div>
+        <label class="label" for="aDur">Duration <output id="aDurOut"></output></label>
+        <input type="range" id="aDur" min="1" max="20" step="0.5" value="6">
+        <label class="check"><input type="checkbox" id="aEase" checked> Ease in and out</label>
+        <p class="hint" id="aHint"></p>
+        <div class="progress" aria-hidden="true"><span id="prog"></span></div>
+        <div class="actions">
+          <button class="btn primary" id="playBtn" type="button">Play</button>
+          <button class="btn" id="recBtn" type="button">Record video</button>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="label">Export</div>
+        <div class="actions">
+          <button class="btn primary" id="svgBtn" type="button">Save SVG</button>
+          <button class="btn primary" id="pngBtn" type="button">Save PNG</button>
+        </div>
+        <button class="btn" id="copyBtn" type="button">Copy SVG code</button>
+        <p class="status" id="status" aria-live="polite"></p>
+      </div>
+    </aside>
+  </div>
+
+  <section class="notes" aria-label="How it works">
+    <div><h2>Polygons in contact</h2><p>This is Hankin's method, published by E. H. Hankin in 1925 after studying Islamic architectural ornament. Start from a tiling, then from the midpoint of every edge send two rays into each tile. Each ray stops where it first meets another ray, and the stopped rays are the pattern.</p></div>
+    <div><h2>The contact angle</h2><p>θ is the angle between a ray and its edge. For a tile with <b>n</b> sides, the critical angle is <b>180°/n</b>. Below it, rays from neighbouring edges meet near the corner and the design hugs the tiling. Above it, rays reach deeper and the star points sharpen. The chips under the pattern show where you are for each tile shape.</p></div>
+    <div><h2>The offset</h2><p>δ slides the two rays apart along the edge, as a fraction of the edge length. Positive values make them cross just inside the edge, which reads as two strands woven through. Negative values split them into parallel pairs, the start of a doubled-line style.</p></div>
+    <div><h2>Symmetry</h2><p>The pattern keeps every symmetry of the tiling underneath it. Square and 4.8.8 tilings give wallpaper group <b>p4m</b> (fourfold turns and mirrors). The triangle and hexagon families give <b>p6m</b>, with sixfold turns. Try counting the mirror lines in a single star.</p></div>
+  </section>
+</div>
+
+<script>
+(() => {
+const R3 = Math.sqrt(3), D = Math.PI / 180;
+const reg = (cx, cy, n, r, rot) => Array.from({length:n}, (_, k) => {
+  const a = rot + 2*Math.PI*k/n; return [cx + r*Math.cos(a), cy + r*Math.sin(a)];
+});
+const W8 = 1 + Math.SQRT2, R8 = 1/(2*Math.sin(Math.PI/8));
+
+// Every tiling uses edge length 1. a, b: lattice vectors; cell: polygons in one period.
+const TILINGS = {
+  square: {code:'4.4.4.4', name:'Squares', sym:'p4m', a:[1,0], b:[0,1],
+    hint:'Four squares meet at every corner.',
+    cell:[{kind:0, pts:reg(0,0,4,Math.SQRT1_2,Math.PI/4)}]},
+  hex: {code:'6.6.6', name:'Hexagons', sym:'p6m', a:[1.5,R3/2], b:[0,R3],
+    hint:'Three hexagons meet at every corner.',
+    cell:[{kind:0, pts:reg(0,0,6,1,0)}]},
+  tri: {code:'3⁶', name:'Triangles', sym:'p6m', a:[1,0], b:[.5,R3/2],
+    hint:'Six triangles meet at every corner (3.3.3.3.3.3).',
+    cell:[{kind:0, pts:[[0,0],[1,0],[.5,R3/2]]},{kind:0, pts:[[1,0],[1.5,R3/2],[.5,R3/2]]}]},
+  oct: {code:'4.8.8', name:'Octagons + squares', sym:'p4m', a:[W8,0], b:[0,W8],
+    hint:'One square and two octagons meet at every corner.',
+    cell:[{kind:0, pts:reg(0,0,8,R8,Math.PI/8)},
+          {kind:1, pts:[[W8/2,.5],[W8-.5,W8/2],[W8/2,W8-.5],[.5,W8/2]]}]},
+  trihex: {code:'3.6.3.6', name:'Hexagons + triangles', sym:'p6m', a:[2,0], b:[1,R3],
+    hint:'Triangle, hexagon, triangle, hexagon around every corner.',
+    cell:[{kind:0, pts:reg(0,0,6,1,0)},
+          {kind:1, pts:[[1,0],[1.5,R3/2],[.5,R3/2]]},
+          {kind:1, pts:[[.5,R3/2],[-.5,R3/2],[0,R3]]}]},
+};
+const ORDER = ['square','hex','tri','oct','trihex'];
+
+const PALETTES = [
+  {name:'Lapis and gold', bg:'#13294B', a:'#E8C26A', b:'#F2EDE1'},
+  {name:'Glazed tile', bg:'#F1EFE7', a:'#1D6A80', b:'#B4462C'},
+  {name:'Ink on paper', bg:'#FBFBF8', a:'#16181B', b:'#16181B'},
+  {name:'Night garden', bg:'#141716', a:'#7FD1C3', b:'#F0A35A'},
+  {name:'Terracotta', bg:'#7A2E1F', a:'#F4D9B3', b:'#E9A15A'},
+  {name:'Celadon', bg:'#CFE0D2', a:'#2F4A3E', b:'#7A5C2E'},
+];
+
+const state = {tiling:'oct', theta:67.5, delta:0, scale:56, rot:0, weight:4, band:true, tiles:false,
+  pal:0, bg:PALETTES[0].bg, a:PALETTES[0].a, b:PALETTES[0].b, size:600, segs:[], polys:[], reveal:1};
+
+const $ = id => document.getElementById(id);
+const cv = $('cv'), ctx = cv.getContext('2d');
+
+// ---------- geometry ----------
+function hankin(pts, th, del){
+  const n = pts.length; let cx = 0, cy = 0;
+  for (const p of pts){cx += p[0]; cy += p[1];} cx /= n; cy /= n;
+  let rad = 0; for (const p of pts) rad = Math.max(rad, Math.hypot(p[0]-cx, p[1]-cy));
+  const c = Math.cos(th), s = Math.sin(th), rays = [];
+  for (let i = 0; i < n; i++){
+    const A = pts[i], B = pts[(i+1)%n];
+    let ux = B[0]-A[0], uy = B[1]-A[1]; const L = Math.hypot(ux, uy); ux /= L; uy /= L;
+    const mx = (A[0]+B[0])/2, my = (A[1]+B[1])/2;
+    let nx = -uy, ny = ux; if ((cx-mx)*nx + (cy-my)*ny < 0){nx = -nx; ny = -ny;}
+    const off = del*L;
+    rays.push({e:i, p:[mx-off*ux, my-off*uy], d:[c*ux+s*nx, c*uy+s*ny]});
+    rays.push({e:i, p:[mx+off*ux, my+off*uy], d:[-c*ux+s*nx, -c*uy+s*ny]});
+  }
+  const out = [], lim = rad*1.02;
+  for (const r of rays){
+    let best = Infinity, bt = 0;
+    for (const q of rays){
+      if (q === r || q.e === r.e) continue;
+      const cr = r.d[0]*q.d[1] - r.d[1]*q.d[0];
+      if (Math.abs(cr) < 1e-9) continue;
+      const dx = q.p[0]-r.p[0], dy = q.p[1]-r.p[1];
+      const t = (dx*q.d[1] - dy*q.d[0]) / cr, u = (dx*r.d[1] - dy*r.d[0]) / cr;
+      if (t > 1e-7 && u > 1e-7 && t+u < best){
+        const X = r.p[0]+t*r.d[0], Y = r.p[1]+t*r.d[1];
+        if (Math.hypot(X-cx, Y-cy) <= lim){best = t+u; bt = t;}
+      }
+    }
+    if (best < Infinity) out.push([r.p[0], r.p[1], r.p[0]+bt*r.d[0], r.p[1]+bt*r.d[1]]);
+  }
+  return out;
+}
+
+function build(){
+  const T = TILINGS[state.tiling], S = state.size, k = state.scale, ro = state.rot*D;
+  const cr = Math.cos(ro), sr = Math.sin(ro), h = S/2;
+  const tx = (x, y) => [h + k*(x*cr - y*sr), h + k*(x*sr + y*cr)];
+  const reach = S*0.75/k + 3;
+  const minLen = Math.min(Math.hypot(...T.a), Math.hypot(...T.b));
+  const N = Math.ceil(reach/minLen*1.6) + 2;
+  const th = state.theta*D, segs = [], polys = [];
+  const cache = T.cell.map(c => ({kind:c.kind, pts:c.pts, segs:hankin(c.pts, th, state.delta)}));
+  for (let i = -N; i <= N; i++) for (let j = -N; j <= N; j++){
+    const ox = i*T.a[0] + j*T.b[0], oy = i*T.a[1] + j*T.b[1];
+    if (Math.hypot(ox, oy) > reach) continue;
+    for (const c of cache){
+      for (const s of c.segs){
+        const p = tx(s[0]+ox, s[1]+oy), q = tx(s[2]+ox, s[3]+oy);
+        if (Math.max(p[0],q[0]) < -20 || Math.min(p[0],q[0]) > S+20 || Math.max(p[1],q[1]) < -20 || Math.min(p[1],q[1]) > S+20) continue;
+        segs.push([p[0],p[1],q[0],q[1],c.kind]);
+      }
+      if (state.tiles) polys.push(c.pts.map(p => tx(p[0]+ox, p[1]+oy)));
+    }
+  }
+  state.segs = segs; state.polys = polys;
+}
+
+// ---------- drawing ----------
+function paint(g, S){
+  g.save(); g.fillStyle = state.bg; g.fillRect(0, 0, S, S);
+  g.lineCap = 'round'; g.lineJoin = 'round';
+  if (state.tiles){
+    g.strokeStyle = state.b; g.globalAlpha = .35; g.lineWidth = 1; g.setLineDash([4,4]);
+    g.beginPath(); for (const p of state.polys){g.moveTo(p[0][0],p[0][1]); for (let i=1;i<p.length;i++) g.lineTo(p[i][0],p[i][1]); g.closePath();}
+    g.stroke(); g.setLineDash([]); g.globalAlpha = 1;
+  }
+  for (const kind of [1,0]){
+    const path = new Path2D();
+    const r = state.reveal;
+    for (const s of state.segs) if (s[4] === kind){path.moveTo(s[0],s[1]); path.lineTo(s[0]+(s[2]-s[0])*r, s[1]+(s[3]-s[1])*r);}
+    g.strokeStyle = kind ? state.b : state.a; g.lineWidth = state.weight; g.stroke(path);
+    if (state.band && state.weight >= 2){g.strokeStyle = state.bg; g.lineWidth = state.weight*0.45; g.stroke(path);}
+  }
+  g.restore();
+}
+
+function resize(){
+  const box = cv.parentElement, S = Math.round(box.clientWidth), dpr = window.devicePixelRatio || 1;
+  const px = Math.max(2, Math.round(S*dpr/2)*2);   // even size keeps video encoders happy
+  state.size = S; cv.width = px; cv.height = px;
+  ctx.setTransform(px/S, 0, 0, px/S, 0, 0);
+}
+
+function render(){ build(); paint(ctx, state.size); updateReadout(); }
+
+function updateReadout(){
+  const T = TILINGS[state.tiling];
+  $('readout').innerHTML = `<span>tiling <b>${T.code}</b></span><span>symmetry <b>${T.sym}</b></span><span>θ <b>${state.theta.toFixed(1)}°</b></span><span>δ <b>${state.delta.toFixed(2)}</b></span><span>segments <b>${state.segs.length.toLocaleString()}</b></span>`;
+  const ns = [...new Set(T.cell.map(c => c.pts.length))].sort((a,b) => b-a);
+  const word = {3:'triangle',4:'square',6:'hexagon',8:'octagon'};
+  $('crit').innerHTML = ns.map(n => {
+    const c = 180/n, above = state.theta > c;
+    return `<span class="chip${above?' above':''}">${word[n]} · 180°/${n} = ${c.toFixed(1)}° · θ ${above?'above':'below'}</span>`;
+  }).join('');
+}
+
+// ---------- controls ----------
+function icon(key){
+  const T = TILINGS[key], polys = [];
+  for (let i=-2;i<=2;i++) for (let j=-2;j<=2;j++) for (const c of T.cell)
+    polys.push(c.pts.map(p => [p[0]+i*T.a[0]+j*T.b[0], p[1]+i*T.a[1]+j*T.b[1]]));
+  const s = key === 'oct' ? 4.2 : key === 'trihex' ? 5 : 7;
+  const d = polys.map(p => 'M' + p.map(q => `${(13+q[0]*s).toFixed(1)} ${(13+q[1]*s).toFixed(1)}`).join('L') + 'Z').join('');
+  return `<svg viewBox="0 0 26 26" aria-hidden="true"><path d="${d}" fill="none" stroke="currentColor" stroke-width="1.1"/></svg>`;
+}
+$('tilings').innerHTML = ORDER.map(k => `<button type="button" data-k="${k}" aria-pressed="false" title="${TILINGS[k].name}">${icon(k)}${TILINGS[k].code}</button>`).join('');
+$('pals').innerHTML = PALETTES.map((p,i) => `<button type="button" data-i="${i}" aria-pressed="false" title="${p.name}" aria-label="${p.name}"><span style="background:${p.bg}"></span><span style="background:${p.a}"></span></button>`).join('');
+
+const sliders = {theta:v=>v.toFixed(1)+'°', delta:v=>v.toFixed(2), scale:v=>v+' px', rot:v=>v.toFixed(1)+'°', weight:v=>v.toFixed(1)+' px'};
+function syncUI(){
+  for (const k in sliders){ $(k).value = state[k]; $(k+'Out').textContent = sliders[k](+state[k]); }
+  $('band').checked = state.band; $('showTiles').checked = state.tiles;
+  $('cBg').value = state.bg; $('cA').value = state.a; $('cB').value = state.b;
+  document.querySelectorAll('#tilings button').forEach(b => b.setAttribute('aria-pressed', b.dataset.k === state.tiling));
+  document.querySelectorAll('#pals button').forEach(b => b.setAttribute('aria-pressed', +b.dataset.i === state.pal));
+  $('tilingName').textContent = TILINGS[state.tiling].name;
+  $('tilingHint').textContent = TILINGS[state.tiling].hint;
+  $('weight').max = 24;
+}
+for (const k in sliders) $(k).addEventListener('input', e => { state[k] = +e.target.value; $(k+'Out').textContent = sliders[k](state[k]); render(); });
+$('band').addEventListener('change', e => { state.band = e.target.checked; render(); });
+$('showTiles').addEventListener('change', e => { state.tiles = e.target.checked; render(); });
+$('tilings').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; state.tiling = b.dataset.k; syncUI(); render(); });
+$('pals').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; const p = PALETTES[+b.dataset.i];
+  Object.assign(state, {pal:+b.dataset.i, bg:p.bg, a:p.a, b:p.b}); syncUI(); render(); });
+[['cBg','bg'],['cA','a'],['cB','b']].forEach(([id,key]) => $(id).addEventListener('input', e => { state[key] = e.target.value; state.pal = -1; syncUI(); render(); }));
+
+$('random').addEventListener('click', () => {
+  const r = (a,b) => a + Math.random()*(b-a), pick = arr => arr[Math.floor(Math.random()*arr.length)];
+  const p = Math.floor(Math.random()*PALETTES.length);
+  Object.assign(state, {tiling:pick(ORDER), theta:Math.round(r(20,80)*2)/2,
+    delta: Math.random() < .55 ? 0 : Math.round(r(-.25,.25)*100)/100,
+    scale:Math.round(r(36,110)), rot: Math.random() < .6 ? 0 : Math.round(r(0,45)),
+    weight:Math.round(r(2,9)*2)/2, band: Math.random() < .6, pal:p, bg:PALETTES[p].bg, a:PALETTES[p].a, b:PALETTES[p].b});
+  syncUI(); render();
+});
+
+// ---------- animation ----------
+const ANIM = {
+  theta:{min:1, max:89, step:.5, from:20, to:80},
+  delta:{min:-.4, max:.4, step:.01, from:-.3, to:.3},
+  rot:{min:0, max:90, step:.5, from:0, to:90},
+  scale:{min:16, max:220, step:1, from:40, to:120},
+  draw:null,
+};
+const an = {mode:'loop', param:'theta', from:20, to:80, dur:6, ease:true, raf:null, t0:0, recording:false};
+
+function animHint(){
+  const what = an.param === 'draw'
+    ? 'Rays grow out of each edge midpoint until they meet, the way the method is drawn by hand. '
+    : '';
+  const how = an.mode === 'loop'
+    ? 'Loop goes from → to → from, so a recorded video repeats without a jump.'
+    : 'Play once goes from → to and holds on the last frame.';
+  $('aHint').textContent = what + how;
+}
+function setParamUI(){
+  const cfg = ANIM[an.param];
+  $('rangeBox').hidden = !cfg;
+  if (cfg){
+    for (const [id, key] of [['aFrom','from'],['aTo','to']]){
+      const el = $(id); el.min = cfg.min; el.max = cfg.max; el.step = cfg.step; el.value = an[key];
+      $(id+'Out').textContent = sliders[an.param](+an[key]);
+    }
+  }
+  $('aDurOut').textContent = an.dur.toFixed(1) + ' s';
+  document.querySelectorAll('#modes button').forEach(b => b.setAttribute('aria-pressed', b.dataset.mode === an.mode));
+  animHint();
+}
+function applyAnim(x){
+  if (an.param === 'draw'){ state.reveal = x; paint(ctx, state.size); return; }
+  const cfg = ANIM[an.param];
+  let v = an.from + (an.to - an.from)*x;
+  v = Math.round(v/cfg.step)*cfg.step; v = +v.toFixed(3);
+  state[an.param] = v; $(an.param).value = v; $(an.param+'Out').textContent = sliders[an.param](v);
+  render();
+}
+function frame(now){
+  const u = (now - an.t0)/1000/an.dur;
+  let x, p;
+  if (an.mode === 'loop'){ p = u % 1; x = p < .5 ? p*2 : 2 - p*2; }
+  else { p = Math.min(u, 1); x = p; }
+  if (an.ease) x = (1 - Math.cos(Math.PI*x))/2;
+  applyAnim(x);
+  $('prog').style.width = (p*100).toFixed(1) + '%';
+  if (an.recording) say(`Recording… ${Math.min((now-an.t0)/1000, an.recLen).toFixed(1)} / ${an.recLen.toFixed(1)} s`);
+  if (an.mode === 'once' && u >= 1 && !an.recording){ stopAnim(false); return; }
+  an.raf = requestAnimationFrame(frame);
+}
+function playAnim(){
+  stopAnim(false);
+  an.t0 = performance.now(); an.raf = requestAnimationFrame(frame);
+  $('playBtn').textContent = 'Stop';
+}
+function stopAnim(resetReveal = true){
+  if (an.raf) cancelAnimationFrame(an.raf);
+  an.raf = null; $('playBtn').textContent = 'Play';
+  if (resetReveal && state.reveal !== 1){ state.reveal = 1; paint(ctx, state.size); }
+}
+$('playBtn').addEventListener('click', () => an.raf ? stopAnim() : playAnim());
+$('modes').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; an.mode = b.dataset.mode; setParamUI(); });
+$('aParam').addEventListener('change', e => {
+  stopAnim(); an.param = e.target.value;
+  const cfg = ANIM[an.param]; if (cfg){ an.from = cfg.from; an.to = cfg.to; }
+  setParamUI();
+});
+$('aFrom').addEventListener('input', e => { an.from = +e.target.value; $('aFromOut').textContent = sliders[an.param](an.from); });
+$('aTo').addEventListener('input', e => { an.to = +e.target.value; $('aToOut').textContent = sliders[an.param](an.to); });
+$('aDur').addEventListener('input', e => { an.dur = +e.target.value; $('aDurOut').textContent = an.dur.toFixed(1) + ' s'; });
+$('aEase').addEventListener('change', e => { an.ease = e.target.checked; });
+
+function canRecord(){ return !!(downloads && window.MediaRecorder && cv.captureStream); }
+function recordVideo(){
+  if (!canRecord()){ say('Video recording isn’t supported in this browser or view.'); return; }
+  const types = ['video/mp4;codecs=avc1.42E01E','video/mp4','video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'];
+  const type = types.find(t => MediaRecorder.isTypeSupported(t));
+  if (!type){ say('This browser can’t encode video.'); return; }
+  let stream, mr;
+  try { stream = cv.captureStream(30); mr = new MediaRecorder(stream, {mimeType:type, videoBitsPerSecond:8e6}); }
+  catch { say('Video recording couldn’t start here.'); return; }
+  const chunks = [];
+  mr.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+  an.recLen = an.mode === 'loop' ? an.dur : an.dur + 0.75;
+  mr.onstop = () => {
+    an.recording = false; stopAnim(); stream.getTracks().forEach(t => t.stop());
+    $('recBtn').disabled = false; $('recBtn').classList.remove('rec'); $('recBtn').textContent = 'Record video'; $('playBtn').disabled = false;
+    const ext = type.includes('mp4') ? 'mp4' : 'webm';
+    const label = an.param === 'draw' ? 'draw' : an.param;
+    const blob = new Blob(chunks, {type: type.split(';')[0]});
+    if (!blob.size){ say('The recording came out empty. Try again.'); return; }
+    save(`contact-angle-${state.tiling}-${label}-${an.mode}.${ext}`, blob);
+  };
+  an.recording = true;
+  $('recBtn').disabled = true; $('recBtn').classList.add('rec'); $('recBtn').textContent = 'Recording…'; $('playBtn').disabled = true;
+  mr.start(250); playAnim();
+  setTimeout(() => { if (mr.state !== 'inactive') mr.stop(); }, an.recLen*1000 + 120);
+}
+$('recBtn').addEventListener('click', recordVideo);
+
+// ---------- export ----------
+function toSVG(){
+  const S = state.size, f = v => +v.toFixed(2);
+  const pathFor = kind => state.segs.filter(s => s[4] === kind).map(s => `M${f(s[0])} ${f(s[1])}L${f(s[2])} ${f(s[3])}`).join('');
+  let body = '';
+  if (state.tiles){
+    const d = state.polys.map(p => 'M' + p.map(q => `${f(q[0])} ${f(q[1])}`).join('L') + 'Z').join('');
+    body += `<path d="${d}" fill="none" stroke="${state.b}" stroke-opacity="0.35" stroke-width="1" stroke-dasharray="4 4"/>`;
+  }
+  for (const kind of [1,0]){
+    const d = pathFor(kind); if (!d) continue;
+    body += `<path d="${d}" fill="none" stroke="${kind ? state.b : state.a}" stroke-width="${state.weight}" stroke-linecap="round" stroke-linejoin="round"/>`;
+    if (state.band && state.weight >= 2) body += `<path d="${d}" fill="none" stroke="${state.bg}" stroke-width="${f(state.weight*0.45)}" stroke-linecap="round"/>`;
+  }
+  const T = TILINGS[state.tiling];
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${S} ${S}" width="${S}" height="${S}">` +
+    `<desc>Contact Angle pattern: tiling ${T.code}, theta ${state.theta}deg, delta ${state.delta}, edge ${state.scale}px, rotation ${state.rot}deg</desc>` +
+    `<defs><clipPath id="c"><rect width="${S}" height="${S}"/></clipPath></defs>` +
+    `<rect width="${S}" height="${S}" fill="${state.bg}"/><g clip-path="url(#c)">${body}</g></svg>`;
+}
+const fname = ext => `contact-angle-${state.tiling}-${String(state.theta).replace('.','_')}.${ext}`;
+const say = m => { $('status').textContent = m; };
+
+let downloads = null;
+$('svgBtn').disabled = $('pngBtn').disabled = true;
+say('Preparing export…');
+Promise.resolve(window.claude?.use?.('downloads')).then(d => {
+  downloads = d || null;
+  $('svgBtn').disabled = $('pngBtn').disabled = !downloads;
+  $('recBtn').disabled = !canRecord();
+  say(downloads ? '' : 'File saving isn’t available in this view. Copy the SVG code instead.');
+}).catch(() => say('File saving isn’t available in this view. Copy the SVG code instead.'));
+$('recBtn').disabled = true;
+
+async function save(filename, data){
+  try { await downloads.save({filename, data}); say(`Saved ${filename}`); }
+  catch (err){
+    const c = err && err.code;
+    if (c === 'declined') say('Save cancelled.');
+    else if (c === 'rate_limited') say('A save prompt is already open. Try again in a moment.');
+    else if (c === 'too_large') say('That file is too large. Try a smaller edge length or the SVG.');
+    else { say('File saving isn’t available in this view. Copy the SVG code instead.'); $('svgBtn').disabled = $('pngBtn').disabled = true; }
+  }
+}
+$('svgBtn').addEventListener('click', () => { if (downloads) save(fname('svg'), toSVG()); });
+$('pngBtn').addEventListener('click', () => {
+  if (!downloads) return;
+  const OUT = 2400, c = document.createElement('canvas'); c.width = c.height = OUT;
+  const g = c.getContext('2d'); g.scale(OUT/state.size, OUT/state.size); paint(g, state.size);
+  c.toBlob(b => b ? save(fname('png'), b) : say('Could not render the PNG.'), 'image/png');
+});
+$('copyBtn').addEventListener('click', () => {
+  const svg = toSVG();
+  navigator.clipboard?.writeText(svg).then(() => say('SVG code copied. Paste it into a .svg file or a design tool.'))
+    .catch(() => say('Copy was blocked here. Use Save SVG instead.'));
+});
+
+// ---------- start ----------
+let rt;
+window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { resize(); render(); }, 80); });
+syncUI(); setParamUI(); resize(); render();
+})();
+</script>
+
+</body></html>
